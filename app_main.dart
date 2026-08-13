@@ -543,6 +543,8 @@ class _RatingPageState extends State<RatingPage> {
       ),
     ),
   );
+  }
+}
 
 class TechnicianHomePage extends StatefulWidget {
   const TechnicianHomePage({super.key});
