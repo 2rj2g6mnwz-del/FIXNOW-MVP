@@ -1,0 +1,49 @@
+name: Build FixNow Customer + Partner APKs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Create customer app
+        run: |
+          flutter create --platforms=android --org=com.fixnow customer_app
+          cp customer_main.dart customer_app/lib/main.dart
+          sed -i 's/android:label="customer_app"/android:label="FixNow"/' customer_app/android/app/src/main/AndroidManifest.xml
+
+      - name: Create partner app
+        run: |
+          flutter create --platforms=android --org=com.fixnow partner_app
+          cp technician_main.dart partner_app/lib/main.dart
+          sed -i 's/android:label="partner_app"/android:label="FixNow Partner"/' partner_app/android/app/src/main/AndroidManifest.xml
+
+      - name: Build customer APK
+        working-directory: customer_app
+        run: flutter build apk --debug
+
+      - name: Build partner APK
+        working-directory: partner_app
+        run: flutter build apk --debug
+
+      - name: Upload customer APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FixNow-Customer-APK
+          path: customer_app/build/app/outputs/flutter-apk/app-debug.apk
+
+      - name: Upload partner APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FixNow-Partner-APK
+          path: partner_app/build/app/outputs/flutter-apk/app-debug.apk
