@@ -20,13 +20,99 @@ jobs:
         run: |
           flutter create --platforms=android --org=com.fixnow customer_app
           cp customer_main.dart customer_app/lib/main.dart
+          cp firebase/customer/google-services.json customer_app/android/app/google-services.json
           sed -i 's/android:label="customer_app"/android:label="FixNow"/' customer_app/android/app/src/main/AndroidManifest.xml
+          cd customer_app
+          flutter pub add firebase_core cloud_firestore
+          cd ..
+
+      - name: Configure Firebase for customer
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          root = Path("customer_app/android")
+
+          settings_kts = root / "settings.gradle.kts"
+          settings_groovy = root / "settings.gradle"
+          app_kts = root / "app/build.gradle.kts"
+          app_groovy = root / "app/build.gradle"
+
+          if settings_kts.exists():
+              s = settings_kts.read_text()
+              line = '    id("com.google.gms.google-services") version "4.5.0" apply false\n'
+              if "com.google.gms.google-services" not in s:
+                  s = s.replace("plugins {\n", "plugins {\n" + line, 1)
+                  settings_kts.write_text(s)
+          elif settings_groovy.exists():
+              s = settings_groovy.read_text()
+              line = "    id 'com.google.gms.google-services' version '4.5.0' apply false\n"
+              if "com.google.gms.google-services" not in s:
+                  s = s.replace("plugins {\n", "plugins {\n" + line, 1)
+                  settings_groovy.write_text(s)
+
+          if app_kts.exists():
+              s = app_kts.read_text()
+              line = '    id("com.google.gms.google-services")\n'
+              if "com.google.gms.google-services" not in s:
+                  s = s.replace("plugins {\n", "plugins {\n" + line, 1)
+                  app_kts.write_text(s)
+          elif app_groovy.exists():
+              s = app_groovy.read_text()
+              line = "    id 'com.google.gms.google-services'\n"
+              if "com.google.gms.google-services" not in s:
+                  s = s.replace("plugins {\n", "plugins {\n" + line, 1)
+                  app_groovy.write_text(s)
+          PY
 
       - name: Create partner app
         run: |
           flutter create --platforms=android --org=com.fixnow partner_app
           cp technician_main.dart partner_app/lib/main.dart
+          cp firebase/partner/google-services.json partner_app/android/app/google-services.json
           sed -i 's/android:label="partner_app"/android:label="FixNow Partner"/' partner_app/android/app/src/main/AndroidManifest.xml
+          cd partner_app
+          flutter pub add firebase_core cloud_firestore
+          cd ..
+
+      - name: Configure Firebase for partner
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          root = Path("partner_app/android")
+
+          settings_kts = root / "settings.gradle.kts"
+          settings_groovy = root / "settings.gradle"
+          app_kts = root / "app/build.gradle.kts"
+          app_groovy = root / "app/build.gradle"
+
+          if settings_kts.exists():
+              s = settings_kts.read_text()
+              line = '    id("com.google.gms.google-services") version "4.5.0" apply false\n'
+              if "com.google.gms.google-services" not in s:
+                  s = s.replace("plugins {\n", "plugins {\n" + line, 1)
+                  settings_kts.write_text(s)
+          elif settings_groovy.exists():
+              s = settings_groovy.read_text()
+              line = "    id 'com.google.gms.google-services' version '4.5.0' apply false\n"
+              if "com.google.gms.google-services" not in s:
+                  s = s.replace("plugins {\n", "plugins {\n" + line, 1)
+                  settings_groovy.write_text(s)
+
+          if app_kts.exists():
+              s = app_kts.read_text()
+              line = '    id("com.google.gms.google-services")\n'
+              if "com.google.gms.google-services" not in s:
+                  s = s.replace("plugins {\n", "plugins {\n" + line, 1)
+                  app_kts.write_text(s)
+          elif app_groovy.exists():
+              s = app_groovy.read_text()
+              line = "    id 'com.google.gms.google-services'\n"
+              if "com.google.gms.google-services" not in s:
+                  s = s.replace("plugins {\n", "plugins {\n" + line, 1)
+                  app_groovy.write_text(s)
+          PY
 
       - name: Build customer APK
         working-directory: customer_app
